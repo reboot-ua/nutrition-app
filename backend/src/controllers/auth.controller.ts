@@ -1,10 +1,8 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../prisma'
 import jwt, { Secret, SignOptions } from 'jsonwebtoken'
 import { authConfig } from '../config/auth.config'
-
-const prisma = new PrismaClient()
 
 const generateTokens = (userId: string, email: string) => {
   const options: SignOptions = { expiresIn: authConfig.jwt.accessTokenExpiresIn as jwt.SignOptions['expiresIn'] }
