@@ -8,20 +8,121 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  password     String
-  age          Int
-  weight       Float
-  height       Float
-  gender       String
-  activity     String
-  goal         String
-  refreshToken String?
-  meals        Meal[]
-  workouts     Workout[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String
+  age               Int
+  weight            Float
+  height            Float
+  gender            String
+  activity          String
+  goal              String
+  mealReminders     Boolean   @default(false)
+  workoutReminders  Boolean   @default(false)
+  weeklyReports     Boolean   @default(false)
+  refreshToken      String?
+  meals             Meal[]
+  workouts          Workout[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  profile           Profile?
+  followers         Follow[]  @relation("following")
+  following         Follow[]  @relation("followers")
+  achievements      UserAchievement[]
+  posts             Post[]
+  comments          Comment[]
+  likes             Like[]
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  username    String   @unique
+  bio         String?
+  avatar      String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  followerId  String
+  following   User     @relation("followers", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  icon        String
+  users       UserAchievement[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  achievementId String
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  content     String
+  image       String?
+  likes       Like[]
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([postId])
+}
+
+model Like {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
 }
 
 model Meal {
